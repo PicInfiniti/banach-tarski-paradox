@@ -1516,7 +1516,7 @@ function Ls(i, t, e, n, s) {
   return true;
 }
 const ec = new Pi(), _i = new N(), Us = new N();
-class Di {
+let Di = class {
   constructor(t = new N(), e = -1) {
     this.isSphere = true, this.center = t, this.radius = e;
   }
@@ -1593,7 +1593,7 @@ class Di {
   fromJSON(t) {
     return this.radius = t.radius, this.center.fromArray(t.center), this;
   }
-}
+};
 const Qe = new N(), Is = new N(), zi = new N(), xn = new N(), Ns = new N(), Vi = new N(), Fs = new N();
 class Ms {
   constructor(t = new N(), e = new N(0, 0, -1)) {
@@ -12905,7 +12905,8 @@ class jp {
     for (const t in this.pointGroups) this.pointGroups[t].visible = this.params.show[t];
   }
 }
-class Kp {
+const Kp = { BASE_URL: "/", DEV: false, MODE: "production", PROD: true, SSR: false, VITE_SITE: "picinfiniti.net" }, Zp = Kp;
+class Jp {
   constructor(t) {
     this.env = t, this.test = new jp(this);
   }
@@ -12913,5 +12914,5 @@ class Kp {
     this.test.init();
   }
 }
-const Zp = { BASE_URL: "/", DEV: false, MODE: "production", PROD: true, SSR: false, VITE_SITE: "picinfiniti.net" }, Jp = Zp, Qp = new Kp(Jp);
+const Qp = new Jp(Zp);
 Qp.init();
