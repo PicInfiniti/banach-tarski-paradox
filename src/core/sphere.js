@@ -1,29 +1,33 @@
-// src/test/test.js
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import GUI from "lil-gui";
 
 export default class Sphere {
-  constructor(app) {
-    this.app = app;
+  constructor({ env, container = document.body }) {
+    this.env = env;
+    this.container = container;
+
     this.renderer = null;
     this.scene = null;
     this.camera = null;
     this.controls = null;
-    this.pointsObj = null;
+    this.pointsGroup = null;
     this.poleGroup = null;
     this.sphereRef = null;
+    this.axes = null;
     this.gui = null;
-    this.pointGroups = {}; // name → THREE.Points
+    this.pointGroups = {};
+    this.animationFrameId = null;
+    this.clock = new THREE.Clock();
+    this.pointTexture = null;
 
     this.params = {
-      depth: 6, // max reduced word length
-      starts: 60, // number of seed points on sphere
-      pointSize: 2.0, // px
+      depth: 6,
+      starts: 60,
+      pointSize: 2.0,
       rotateScene: true,
-      angleR: Math.PI * (Math.sqrt(2) - 1), // ~ irrational * π, z-axis
-      angleU: Math.PI * (Math.sqrt(5) - 2), // ~ irrational * π, x-axis
-
+      angleR: Math.PI * (Math.sqrt(2) - 1),
+      angleU: Math.PI * (Math.sqrt(5) - 2),
       show: {
         identity: true,
         R: true,
@@ -31,19 +35,24 @@ export default class Sphere {
         U: true,
         D: true,
       },
-
       showAxes: true,
     };
 
     this.palette = {
-      "": new THREE.Color("#00c853"), // identity (green)
+      identity: new THREE.Color("#00c853"),
       R: new THREE.Color("#e53935"),
       L: new THREE.Color("#8e24aa"),
       U: new THREE.Color("#fb8c00"),
       D: new THREE.Color("#3949ab"),
     };
-    this.inv = { R: "L", L: "R", U: "D", D: "U" };
-    this.clock = new THREE.Clock();
+
+    this.inverse = {
+      R: "L",
+      L: "R",
+      U: "D",
+      D: "U",
+    };
+
     this._onResize = this.onResize.bind(this);
     this._tick = this.tick.bind(this);
   }
@@ -51,17 +60,18 @@ export default class Sphere {
   init() {
     this.setupThree();
     this.setupGUI();
+    this.pointTexture = this.makeCircleTexture(64, 1.6);
     this.build();
+
     window.addEventListener("resize", this._onResize);
-    requestAnimationFrame(this._tick);
+    this.animationFrameId = requestAnimationFrame(this._tick);
   }
 
-  // ---------- THREE setup ----------
   setupThree() {
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.setSize(window.innerWidth, window.innerHeight);
-    this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-    document.body.appendChild(this.renderer.domElement);
+    this.container.appendChild(this.renderer.domElement);
 
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x000000);
@@ -77,7 +87,6 @@ export default class Sphere {
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = true;
 
-    // a faint wire sphere
     this.sphereRef = new THREE.Mesh(
       new THREE.SphereGeometry(1, 64, 32),
       new THREE.MeshBasicMaterial({
@@ -89,282 +98,328 @@ export default class Sphere {
     );
     this.scene.add(this.sphereRef);
 
-    // little axes
     this.axes = new THREE.AxesHelper(1.5);
+    this.axes.visible = this.params.showAxes;
     this.scene.add(this.axes);
   }
 
   setupGUI() {
     this.gui = new GUI();
+
     this.gui
       .add(this.params, "depth", 1, 8, 1)
       .name("Word depth")
       .onFinishChange(() => this.build());
+
     this.gui
       .add(this.params, "starts", 6, 200, 1)
       .name("Starting points")
       .onFinishChange(() => this.build());
+
     this.gui
       .add(this.params, "pointSize", 1, 6, 0.1)
       .name("Point size")
       .onChange(() => this.updatePointSize());
+
     this.gui.add(this.params, "rotateScene").name("Auto-rotate");
+
     this.gui
       .add(this.params, "angleR", 0.1, Math.PI * 1.9, 0.0001)
       .name("Angle R (z)")
       .onFinishChange(() => this.build());
+
     this.gui
       .add(this.params, "angleU", 0.1, Math.PI * 1.9, 0.0001)
       .name("Angle U (x)")
       .onFinishChange(() => this.build());
 
-    const fg = this.gui.addFolder("Show colors");
-    fg.add(this.params.show, "identity")
+    const showFolder = this.gui.addFolder("Show colors");
+    showFolder
+      .add(this.params.show, "identity")
       .name("Identity (G)")
       .onChange(() => this.updateVisibility());
-    fg.add(this.params.show, "R")
+    showFolder
+      .add(this.params.show, "R")
       .name("R")
       .onChange(() => this.updateVisibility());
-    fg.add(this.params.show, "L")
+    showFolder
+      .add(this.params.show, "L")
       .name("L")
       .onChange(() => this.updateVisibility());
-    fg.add(this.params.show, "U")
+    showFolder
+      .add(this.params.show, "U")
       .name("U")
       .onChange(() => this.updateVisibility());
-    fg.add(this.params.show, "D")
+    showFolder
+      .add(this.params.show, "D")
       .name("D")
       .onChange(() => this.updateVisibility());
 
     this.gui
       .add(this.params, "showAxes")
       .name("Show axes")
-      .onChange(() => {
-        this.axes.visible = this.params.showAxes;
+      .onChange((value) => {
+        this.axes.visible = value;
       });
   }
 
-  // ---------- math ----------
-  rotX(theta) {
-    const m = new THREE.Matrix4();
-    const c = Math.cos(theta),
-      s = Math.sin(theta);
-    m.set(1, 0, 0, 0, 0, c, -s, 0, 0, s, c, 0, 0, 0, 0, 1);
-    return m;
+  makeRotationX(theta) {
+    return new THREE.Matrix4().makeRotationX(theta);
   }
-  rotZ(theta) {
-    const m = new THREE.Matrix4();
-    const c = Math.cos(theta),
-      s = Math.sin(theta);
-    m.set(c, -s, 0, 0, s, c, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
-    return m;
+
+  makeRotationZ(theta) {
+    return new THREE.Matrix4().makeRotationZ(theta);
   }
 
   generateWords(maxLen) {
-    // word: { letters, mat, last }
-    const words = [
-      { letters: "", mat: new THREE.Matrix4().identity(), last: null },
-    ];
-    let frontier = words.slice(0);
-    const gens = [
-      { key: "R", mat: () => this.rotZ(this.params.angleR) },
-      { key: "L", mat: () => this.rotZ(-this.params.angleR) },
-      { key: "U", mat: () => this.rotX(this.params.angleU) },
-      { key: "D", mat: () => this.rotX(-this.params.angleU) },
-    ];
+    const generators = {
+      R: this.makeRotationZ(this.params.angleR),
+      L: this.makeRotationZ(-this.params.angleR),
+      U: this.makeRotationX(this.params.angleU),
+      D: this.makeRotationX(-this.params.angleU),
+    };
+
+    const words = [{ letters: "", mat: new THREE.Matrix4(), last: null }];
+
+    let frontier = words;
+
     for (let len = 1; len <= maxLen; len++) {
       const next = [];
-      for (const w of frontier) {
-        for (const g of gens) {
-          if (w.last && g.key === this.inv[w.last]) continue; // no backtracking
-          const mat = w.mat.clone().premultiply(g.mat()); // left-multiply (last letter = leftmost)
-          next.push({ letters: g.key + w.letters, mat, last: g.key });
+
+      for (const word of frontier) {
+        for (const [key, matrix] of Object.entries(generators)) {
+          if (word.last && key === this.inverse[word.last]) continue;
+
+          next.push({
+            letters: key + word.letters,
+            mat: word.mat.clone().premultiply(matrix),
+            last: key,
+          });
         }
       }
+
       words.push(...next);
       frontier = next;
     }
+
     return words;
   }
 
-  fibonacciSphere(n) {
-    const pts = [];
-    const phi = Math.PI * (3 - Math.sqrt(5));
-    for (let i = 0; i < n; i++) {
-      const y = 1 - (i / (n - 1)) * 2;
-      const r = Math.sqrt(1 - y * y);
-      const theta = i * phi;
-      pts.push(new THREE.Vector3(Math.cos(theta) * r, y, Math.sin(theta) * r));
+  fibonacciSphere(count) {
+    if (count <= 1) return [new THREE.Vector3(0, 1, 0)];
+
+    const points = [];
+    const goldenAngle = Math.PI * (3 - Math.sqrt(5));
+
+    for (let i = 0; i < count; i++) {
+      const y = 1 - (i / (count - 1)) * 2;
+      const radius = Math.sqrt(1 - y * y);
+      const theta = i * goldenAngle;
+
+      points.push(
+        new THREE.Vector3(
+          Math.cos(theta) * radius,
+          y,
+          Math.sin(theta) * radius,
+        ),
+      );
     }
-    return pts;
+
+    return points;
   }
 
-  // ---------- build cloud ----------
+  clearGroup(group) {
+    if (!group) return;
+
+    this.scene.remove(group);
+    group.traverse((object) => {
+      if (object.geometry) object.geometry.dispose();
+      if (object.material) {
+        if (Array.isArray(object.material)) {
+          object.material.forEach((m) => m.dispose());
+        } else {
+          object.material.dispose();
+        }
+      }
+    });
+  }
 
   build() {
-    // clear previous
-    if (this.pointsObj) {
-      this.scene.remove(this.pointsObj);
-      this.pointsObj.traverse((o) => {
-        if (o.isPoints) {
-          o.geometry?.dispose();
-          o.material?.dispose?.();
-        }
-      });
-      this.pointsObj = null;
-    }
-
-    if (this.poleGroup) {
-      this.scene.remove(this.poleGroup);
-      this.poleGroup.children.forEach((c) => {
-        c.geometry.dispose();
-        c.material.dispose();
-      });
-      this.poleGroup = null;
-    }
+    this.clearGroup(this.pointsGroup);
+    this.clearGroup(this.poleGroup);
 
     this.pointGroups = {};
+    this.pointsGroup = new THREE.Group();
+    this.scene.add(this.pointsGroup);
 
-    // parent group for all clouds
-    this.pointsObj = new THREE.Group();
-    this.scene.add(this.pointsObj);
-
-    // ---------- generate data ----------
-    const words = this.generateWords(this.params.depth); // includes identity
+    const words = this.generateWords(this.params.depth);
     const seeds = this.fibonacciSphere(this.params.starts);
-
-    // buckets per color
     const groups = { identity: [], R: [], L: [], U: [], D: [] };
-    for (const w of words) {
-      const key = w.last ?? "identity";
-      for (const s of seeds) {
-        const p = s.clone().applyMatrix4(w.mat).normalize();
+
+    for (const word of words) {
+      const key = word.last ?? "identity";
+
+      for (const seed of seeds) {
+        const p = seed.clone().applyMatrix4(word.mat).normalize();
         groups[key].push(p.x, p.y, p.z);
       }
     }
 
-    // ---------- build clouds ----------
-    const roundTex = this.makeCircleTexture(64, 1.6); // soft circular sprite
-    const ensureShow = (k) =>
-      this.params.show && k in this.params.show ? this.params.show[k] : true;
+    for (const [key, values] of Object.entries(groups)) {
+      if (!values.length) continue;
 
-    for (const key of Object.keys(groups)) {
-      const arr = groups[key];
-      if (!arr.length) continue;
-
-      const geom = new THREE.BufferGeometry();
-      geom.setAttribute(
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute(
         "position",
-        new THREE.BufferAttribute(new Float32Array(arr), 3),
+        new THREE.BufferAttribute(new Float32Array(values), 3),
       );
 
-      const baseColor = this.palette[key === "identity" ? "" : key];
-      const colorBuf = new Float32Array((arr.length / 3) * 3);
-      for (let i = 0; i < colorBuf.length; i += 3) {
-        colorBuf[i] = baseColor.r;
-        colorBuf[i + 1] = baseColor.g;
-        colorBuf[i + 2] = baseColor.b;
-      }
-      geom.setAttribute("color", new THREE.BufferAttribute(colorBuf, 3));
+      const baseColor = this.palette[key];
+      const colors = new Float32Array((values.length / 3) * 3);
 
-      const mat = new THREE.PointsMaterial({
+      for (let i = 0; i < colors.length; i += 3) {
+        colors[i] = baseColor.r;
+        colors[i + 1] = baseColor.g;
+        colors[i + 2] = baseColor.b;
+      }
+
+      geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+
+      const material = new THREE.PointsMaterial({
         size: this.params.pointSize / 100,
         vertexColors: true,
         sizeAttenuation: true,
-        map: roundTex,
+        map: this.pointTexture,
         transparent: true,
         alphaTest: 0.5,
         depthWrite: false,
       });
 
-      const cloud = new THREE.Points(geom, mat);
-      cloud.visible = ensureShow(key);
-
-      this.pointsObj.add(cloud); // parent group gets the cloud
-      this.pointGroups[key] = cloud; // keep reference by color
+      const points = new THREE.Points(geometry, material);
+      points.visible = this.params.show[key];
+      this.pointsGroup.add(points);
+      this.pointGroups[key] = points;
     }
 
-    // poles
     this.addPoles();
   }
 
   addPoles() {
     this.poleGroup = new THREE.Group();
-    const poles = [
+
+    const positions = [
       new THREE.Vector3(0, 0, 1),
-      new THREE.Vector3(0, 0, -1), // z-axis (R/L)
+      new THREE.Vector3(0, 0, -1),
       new THREE.Vector3(1, 0, 0),
-      new THREE.Vector3(-1, 0, 0), // x-axis (U/D)
+      new THREE.Vector3(-1, 0, 0),
     ];
-    const mat = new THREE.MeshBasicMaterial({ color: 0xffeb3b });
-    const g = new THREE.SphereGeometry(0.02, 16, 8);
-    poles.forEach((p) => {
-      const m = new THREE.Mesh(g, mat);
-      m.position.copy(p.multiplyScalar(1.001));
-      this.poleGroup.add(m);
-    });
+
+    const geometry = new THREE.SphereGeometry(0.02, 16, 8);
+    const material = new THREE.MeshBasicMaterial({ color: 0xffeb3b });
+
+    for (const position of positions) {
+      const pole = new THREE.Mesh(geometry, material);
+      pole.position.copy(position).multiplyScalar(1.001);
+      this.poleGroup.add(pole);
+    }
+
     this.scene.add(this.poleGroup);
   }
 
   updatePointSize() {
-    if (this.pointsObj)
-      this.pointsObj.material.size = this.params.pointSize / 100;
+    for (const points of Object.values(this.pointGroups)) {
+      points.material.size = this.params.pointSize / 100;
+      points.material.needsUpdate = true;
+    }
   }
 
-  // ---------- loop / resize / dispose ----------
-  tick() {
-    const t = this.clock.getElapsedTime();
-    if (this.params.rotateScene) {
-      this.sphereRef.rotation.y = t * 0.15;
-      if (this.pointsObj) this.pointsObj.rotation.y = t * 0.15;
-      if (this.poleGroup) this.poleGroup.rotation.y = t * 0.15;
+  updateVisibility() {
+    for (const [key, points] of Object.entries(this.pointGroups)) {
+      points.visible = this.params.show[key];
     }
+  }
+
+  tick() {
+    const elapsed = this.clock.getElapsedTime();
+
+    if (this.params.rotateScene) {
+      const rotation = elapsed * 0.15;
+      this.sphereRef.rotation.y = rotation;
+      if (this.pointsGroup) this.pointsGroup.rotation.y = rotation;
+      if (this.poleGroup) this.poleGroup.rotation.y = rotation;
+    }
+
     this.controls.update();
     this.renderer.render(this.scene, this.camera);
-    requestAnimationFrame(this._tick);
+    this.animationFrameId = requestAnimationFrame(this._tick);
   }
 
   onResize() {
     this.camera.aspect = window.innerWidth / window.innerHeight;
     this.camera.updateProjectionMatrix();
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+
+  makeCircleTexture(size = 64, feather = 1.5) {
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = size;
+
+    const ctx = canvas.getContext("2d");
+    const radius = size * 0.5;
+
+    const gradient = ctx.createRadialGradient(
+      radius,
+      radius,
+      radius / feather,
+      radius,
+      radius,
+      radius,
+    );
+
+    gradient.addColorStop(0, "rgba(255,255,255,1)");
+    gradient.addColorStop(1, "rgba(255,255,255,0)");
+
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(radius, radius, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.generateMipmaps = true;
+    texture.needsUpdate = true;
+    return texture;
   }
 
   destroy() {
     window.removeEventListener("resize", this._onResize);
+
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
+    }
+
     this.gui?.destroy();
-    this.scene.traverse((o) => {
-      if (o.isMesh) {
-        o.geometry?.dispose();
-        o.material?.dispose?.();
-      }
-    });
-    this.renderer.dispose();
-  }
+    this.controls?.dispose();
 
-  makeCircleTexture(size = 64, feather = 1.5) {
-    const c = document.createElement("canvas");
-    c.width = c.height = size;
-    const ctx = c.getContext("2d");
+    this.clearGroup(this.pointsGroup);
+    this.clearGroup(this.poleGroup);
 
-    const r = size * 0.5;
-    const g = ctx.createRadialGradient(r, r, r / feather, r, r, r);
-    g.addColorStop(0.0, "rgba(255,255,255,1)");
-    g.addColorStop(1.0, "rgba(255,255,255,0)");
+    if (this.sphereRef) {
+      this.scene.remove(this.sphereRef);
+      this.sphereRef.geometry.dispose();
+      this.sphereRef.material.dispose();
+    }
 
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.arc(r, r, r, 0, Math.PI * 2);
-    ctx.fill();
+    if (this.pointTexture) {
+      this.pointTexture.dispose();
+      this.pointTexture = null;
+    }
 
-    const tex = new THREE.CanvasTexture(c);
-    tex.generateMipmaps = true;
-    tex.needsUpdate = true;
-    return tex;
-  }
+    this.renderer?.dispose();
 
-  updateVisibility() {
-    for (const key in this.pointGroups) {
-      this.pointGroups[key].visible = this.params.show[key];
+    if (this.renderer?.domElement?.parentNode) {
+      this.renderer.domElement.parentNode.removeChild(this.renderer.domElement);
     }
   }
 }
