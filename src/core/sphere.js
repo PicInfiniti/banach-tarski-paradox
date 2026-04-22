@@ -408,7 +408,7 @@ export default class Sphere {
     const speed = 0.01;
 
     group.rotation.y += dx * speed;
-    group.rotation.x -= dy * speed;
+    group.rotation.x += dy * speed;
 
     const key = this.params.edit.target;
     this.params.rotation[key].x = group.rotation.x;
