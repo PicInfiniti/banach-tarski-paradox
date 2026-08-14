@@ -1,40 +1,47 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import paperUrl from "../main.pdf?url";
 import "./assets/sass/main.sass";
 
 const STAGES = [
   {
-    kicker: "Begin with the ordinary",
-    title: "A solid sphere",
-    body: "Imagine an ideal mathematical ball—not atoms, not clay, but the infinite set of all points inside a sphere.",
-    note: "The theorem lives in pure geometry. Physical matter is finite and cannot behave this way.",
+    kicker: "Step I · the geometric stage",
+    title: "Begin on the sphere S²",
+    body: "The proof first works on the unit sphere, where rotations act without changing distance or shape. The solid ball comes later by radial extension.",
+    note: "This opening shell follows Section 3.2 of the paper. It is a mathematical sphere, not a physical material.",
   },
   {
-    kicker: "The hidden structure",
-    title: "Sort points by orbit",
-    body: "Rotations generate families of related points. With the axiom of choice, one representative can be selected from each family and gathered into a handful of sets.",
-    note: "Each colored set is scattered everywhere. It is not a tidy peel, wedge, or chunk you could manufacture.",
+    kicker: "Step II · a free subgroup",
+    title: "Two free rotations",
+    body: "Choose rotations A and B about orthogonal axes through θ = arccos(1/3). Their reduced words form a copy of the free group F₂ inside SO(3).",
+    note: "Colors track the four first-letter classes S(a), S(a⁻¹), S(b), S(b⁻¹); E marks the exceptional remainder.",
   },
   {
-    kicker: "The counterintuitive cut",
-    title: "Five wild pieces",
-    body: "The ball is partitioned into five non-measurable sets. They have no consistently defined ordinary volume, so “the volumes must add up” no longer applies.",
-    note: "This finite point cloud is only a metaphor. A true Banach–Tarski piece cannot be drawn point-by-point.",
+    kicker: "Step III · the axiom of choice",
+    title: "One seed per orbit",
+    body: "Remove the countable fixed-point set D, then choose a set M containing one representative from every F₂-orbit. Each word class acting on M becomes a scattered piece of S².",
+    note: "The exploded colors symbolize Eᵢ·M. The exact sets are non-measurable and cannot be explicitly rendered point-by-point.",
   },
   {
-    kicker: "Rigid motions only",
-    title: "One becomes two",
-    body: "Rotate and translate those same sets—without stretching—and they can be reassembled into two balls, each congruent to the original.",
-    note: "No matter is created. The surprise comes from infinite sets, non-measurability, and the axiom of choice.",
+    kicker: "Step IV · radial invariance",
+    title: "From shell to solid ball",
+    body: "Extend every spherical piece along its radial segment: Ãᵢ = { rx : x ∈ Aᵢ, 0 < r ≤ 1 }. Rotations commute with this extension, filling B ∖ {0}.",
+    note: "The center and the countable set D are restored by equidecomposability—the paper’s countable absorption step.",
+  },
+  {
+    kicker: "Conclusion · paradoxical decomposition",
+    title: "One ball becomes two",
+    body: "The free-group identities now become two rigid reassemblies. No color is split, stretched, or copied; every displayed piece receives one rotation and one translation.",
+    note: "Left: S(a) ∪ A·S(a⁻¹). Right: S(b) ∪ B·S(b⁻¹), with E absorbed into the finite decomposition.",
   },
 ];
 
 const PIECES = [
-  { name: "α", color: "#ff6b4a", offset: [-1.2, 0.65, 0.1] },
-  { name: "β", color: "#f7c455", offset: [-0.7, -0.85, 0.35] },
-  { name: "γ", color: "#8bd3b0", offset: [0.05, 1.05, -0.25] },
-  { name: "δ", color: "#58a6d8", offset: [0.85, -0.7, 0.2] },
-  { name: "ε", color: "#bd8ce6", offset: [1.2, 0.55, -0.2] },
+  { name: "S(a)", color: "#ff6b4a", offset: [-1.2, 0.65, 0.1] },
+  { name: "S(a⁻¹)", color: "#f7c455", offset: [-0.7, -0.85, 0.35] },
+  { name: "S(b)", color: "#8bd3b0", offset: [0.05, 1.05, -0.25] },
+  { name: "S(b⁻¹)", color: "#58a6d8", offset: [0.85, -0.7, 0.2] },
+  { name: "E", color: "#bd8ce6", offset: [1.2, 0.55, -0.2] },
 ];
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
@@ -50,6 +57,7 @@ class ParadoxLab {
     this.clock = new THREE.Clock();
     this.pieces = [];
     this.pointer = new THREE.Vector2();
+    this.generatorAngle = Math.acos(1 / 3);
     this.frame = null;
 
     this.renderShell();
@@ -74,6 +82,9 @@ class ParadoxLab {
           </a>
           <div class="topbar__meta">
             <span class="edition">Visual essay · 01</span>
+            <a class="icon-button" href="https://github.com/PicInfiniti/banach-tarski-paradox" target="_blank" rel="noreferrer" aria-label="View this project on GitHub">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .7a11.5 11.5 0 0 0-3.64 22.4c.58.1.79-.25.79-.56v-2.24c-3.22.7-3.9-1.37-3.9-1.37-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.16.08 1.78 1.2 1.78 1.2 1.04 1.77 2.72 1.26 3.38.96.1-.75.4-1.26.74-1.55-2.57-.3-5.27-1.29-5.27-5.69 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.16 1.18A10.9 10.9 0 0 1 12 6.09c.98 0 1.95.13 2.87.39 2.19-1.49 3.15-1.18 3.15-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.42-2.71 5.39-5.29 5.68.42.36.78 1.07.78 2.16v3.26c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .7Z"/></svg>
+            </a>
             <button class="text-button" data-open-guide>Field guide <span>↗</span></button>
           </div>
         </header>
@@ -128,12 +139,14 @@ class ParadoxLab {
             <button class="guide__close" aria-label="Close field guide">×</button>
           </div>
           <div class="guide__grid">
-            <article><span>01 / Claim</span><h3>Duplication without scaling</h3><p>A three-dimensional ball can be divided into five disjoint sets and moved by rotations and translations to form two balls identical to the first.</p></article>
-            <article><span>02 / Escape hatch</span><h3>Volume is not defined</h3><p>The pieces are non-measurable. Asking for their individual volumes is not difficult—it is mathematically invalid under the usual notion of volume.</p></article>
-            <article><span>03 / Engine</span><h3>The axiom of choice</h3><p>The construction selects representatives from infinitely many orbits. This choice principle guarantees the sets exist without giving a practical recipe for listing their points.</p></article>
-            <article><span>04 / Boundary</span><h3>Not a physical process</h3><p>Real objects contain finitely many atoms. The theorem applies to ideal point sets and uses discontinuous, infinitely intricate pieces that no blade could cut.</p></article>
+            <article><span>01 / Free group</span><h3>Reduced words in F₂</h3><p>The classes S(a), S(a⁻¹), S(b), and S(b⁻¹) partition all nonidentity reduced words by their first letter. Cancellation produces two paradoxical reassemblies.</p></article>
+            <article><span>02 / Rotations</span><h3>Embed F₂ in SO(3)</h3><p>Rotations A and B use orthogonal axes and θ = arccos(1/3). No nontrivial reduced word becomes the identity, so they generate a free subgroup.</p></article>
+            <article><span>03 / Exceptional set</span><h3>Remove the fixed poles</h3><p>Every nonidentity rotation fixes two antipodal points. Their union D is countable; on S² ∖ D, the free-group action has no fixed points.</p></article>
+            <article><span>04 / Choice</span><h3>Select the orbit seeds M</h3><p>The axiom of choice supplies exactly one representative from every orbit. Acting on M transfers the word decomposition of F₂ onto the sphere.</p></article>
+            <article><span>05 / Radial lift</span><h3>Turn S² into a ball</h3><p>Each surface piece is extended along 0 &lt; r ≤ 1. Because rotations preserve radial lines, the same paradoxical relations hold throughout B ∖ {0}.</p></article>
+            <article><span>06 / Boundary</span><h3>A proof map, not the pieces</h3><p>The colored particles show the paper’s logical structure. The true pieces are non-measurable infinite sets, and no finite rendering can literally construct them.</p></article>
           </div>
-          <footer><span>Stefan Banach &amp; Alfred Tarski · 1924</span><button data-restart>Replay the idea →</button></footer>
+          <footer><span>Self-contained proof · March 2026</span><div><a href="${paperUrl}" target="_blank" rel="noreferrer">Read the paper ↗</a><button data-restart>Replay the proof →</button></div></footer>
         </dialog>
       </div>`;
   }
@@ -145,6 +158,7 @@ class ParadoxLab {
     this.titleEl = this.root.querySelector(".stage-title");
     this.bodyEl = this.root.querySelector(".stage-body");
     this.noteEl = this.root.querySelector(".stage-note p");
+    this.cardEl = this.root.querySelector(".stage-card");
     this.keyEl = this.root.querySelector(".piece-key");
     this.steps = [...this.root.querySelectorAll(".stage-step")];
     this.prev = this.root.querySelector(".stage-prev");
@@ -154,6 +168,7 @@ class ParadoxLab {
 
   setupScene() {
     this.scene = new THREE.Scene();
+    this.isNarrow = window.innerWidth < 700;
     this.camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
     this.camera.position.set(0, 0.15, 6.2);
 
@@ -168,7 +183,7 @@ class ParadoxLab {
     this.controls.enablePan = false;
     this.controls.enableZoom = true;
     this.controls.minDistance = 4.5;
-    this.controls.maxDistance = 8;
+    this.controls.maxDistance = this.isNarrow ? 24 : 12;
     this.controls.autoRotate = !this.reducedMotion;
     this.controls.autoRotateSpeed = 0.32;
 
@@ -179,11 +194,13 @@ class ParadoxLab {
     this.guideSphere = this.makeGuideSphere(1.52);
     this.world.add(this.guideSphere);
 
-    this.isNarrow = window.innerWidth < 700;
+    this.baseCameraDistance = 6.2;
+    this.choiceCameraDistance = this.isNarrow ? 17.5 : 10;
+    this.finalCameraDistance = this.isNarrow ? 19.5 : 9.2;
+    this.cameraGoalDistance = this.baseCameraDistance;
+    this.cameraIsTweening = false;
     this.targetGuides = new THREE.Group();
-    const targetRadius = this.isNarrow ? 0.5 : 1.18;
-    const targetOffset = this.isNarrow ? 0.5 : 1.42;
-    this.targetGuides.add(this.makeGuideSphere(targetRadius, -targetOffset), this.makeGuideSphere(targetRadius, targetOffset));
+    this.targetGuides.add(this.makeGuideSphere(1.52, -1.65), this.makeGuideSphere(1.52, 1.65));
     this.targetGuides.visible = false;
     this.world.add(this.targetGuides);
 
@@ -212,6 +229,7 @@ class ParadoxLab {
 
   buildSphere() {
     const count = this.isNarrow ? 10500 : 18000;
+    const surfaces = Array.from({ length: PIECES.length }, () => []);
     const originals = Array.from({ length: PIECES.length }, () => []);
     const separated = Array.from({ length: PIECES.length }, () => []);
     const doubled = Array.from({ length: PIECES.length }, () => []);
@@ -226,26 +244,36 @@ class ParadoxLab {
       const x = Math.cos(theta) * radial * radius;
       const py = y * radius;
       const z = Math.sin(theta) * radial * radius;
+      const length = Math.hypot(x, py, z) || 1;
+      const sx = (x / length) * 1.5;
+      const sy = (py / length) * 1.5;
+      const sz = (z / length) * 1.5;
       const hash = Math.abs(Math.sin(x * 91.7 + py * 117.3 + z * 73.9) * 43758.5453);
-      const pieceIndex = Math.floor((hash % 1) * PIECES.length);
+      const unitHash = hash % 1;
+      const thresholds = [0.249, 0.498, 0.747, 0.996, 1];
+      const pieceIndex = thresholds.findIndex((threshold) => unitHash < threshold);
       const piece = PIECES[pieceIndex];
+      surfaces[pieceIndex].push(sx, sy, sz);
       originals[pieceIndex].push(x, py, z);
-      separated[pieceIndex].push(x * 0.8 + piece.offset[0], py * 0.8 + piece.offset[1], z * 0.8 + piece.offset[2]);
 
-      const side = ((i * 31 + pieceIndex * 7) % 11) < 5 ? -1 : 1;
-      const angle = (pieceIndex - 2) * 0.48 * side;
-      const cos = Math.cos(angle);
-      const sin = Math.sin(angle);
-      const tx = x * cos - z * sin;
-      const tz = x * sin + z * cos;
-      const targetScale = this.isNarrow ? 0.33 : 0.77;
-      const targetCenter = this.isNarrow ? 0.5 : 1.42;
-      doubled[pieceIndex].push(tx * targetScale + side * targetCenter, py * targetScale, tz * targetScale);
+      const splitPoint = this.rotatePoint(sx, sy, sz, (pieceIndex - 2) * 0.16, (pieceIndex - 2) * 0.27);
+      separated[pieceIndex].push(
+        splitPoint.x + piece.offset[0] * 1.15,
+        splitPoint.y + piece.offset[1] * 1.15,
+        splitPoint.z + piece.offset[2] * 1.15,
+      );
+
+      const destination = pieceIndex < 2 ? -1 : 1;
+      let targetPoint = { x, y: py, z };
+      if (pieceIndex === 1) targetPoint = this.rotateAroundZ(x, py, z, this.generatorAngle);
+      if (pieceIndex === 3) targetPoint = this.rotatePoint(x, py, z, this.generatorAngle, 0);
+      if (pieceIndex === 4) targetPoint = this.rotatePoint(x, py, z, 0, this.generatorAngle);
+      doubled[pieceIndex].push(targetPoint.x + destination * 1.65, targetPoint.y, targetPoint.z);
     }
 
     PIECES.forEach((piece, index) => {
       const geometry = new THREE.BufferGeometry();
-      const current = new Float32Array(originals[index]);
+      const current = new Float32Array(surfaces[index]);
       geometry.setAttribute("position", new THREE.BufferAttribute(current, 3));
       const material = new THREE.PointsMaterial({
         color: new THREE.Color("#e5d7ad"),
@@ -258,14 +286,48 @@ class ParadoxLab {
       });
       const points = new THREE.Points(geometry, material);
       this.world.add(points);
+      const splitMatrix = new THREE.Matrix4()
+        .makeRotationY((index - 2) * 0.27)
+        .multiply(new THREE.Matrix4().makeRotationX((index - 2) * 0.16));
+      const splitQuaternion = new THREE.Quaternion().setFromRotationMatrix(splitMatrix);
+      const finalQuaternion = new THREE.Quaternion();
+      if (index === 1) finalQuaternion.setFromAxisAngle(new THREE.Vector3(0, 0, 1), this.generatorAngle);
+      if (index === 3) finalQuaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), this.generatorAngle);
+      if (index === 4) finalQuaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), this.generatorAngle);
       this.pieces.push({
         points,
+        surface: new Float32Array(surfaces[index]),
         original: new Float32Array(originals[index]),
         separated: new Float32Array(separated[index]),
         doubled: new Float32Array(doubled[index]),
         color: new THREE.Color(piece.color),
+        baseSize: material.size,
+        splitQuaternion,
+        splitTranslation: new THREE.Vector3(...piece.offset).multiplyScalar(1.15),
+        finalQuaternion,
+        finalTranslation: new THREE.Vector3(index < 2 ? -1.65 : 1.65, 0, 0),
       });
     });
+  }
+
+  rotatePoint(x, y, z, angleX, angleY) {
+    const cosX = Math.cos(angleX);
+    const sinX = Math.sin(angleX);
+    const y1 = y * cosX - z * sinX;
+    const z1 = y * sinX + z * cosX;
+    const cosY = Math.cos(angleY);
+    const sinY = Math.sin(angleY);
+    return {
+      x: x * cosY + z1 * sinY,
+      y: y1,
+      z: -x * sinY + z1 * cosY,
+    };
+  }
+
+  rotateAroundZ(x, y, z, angle) {
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+    return { x: x * cos - y * sin, y: x * sin + y * cos, z };
   }
 
   bindEvents() {
@@ -307,6 +369,8 @@ class ParadoxLab {
     this.bodyEl.textContent = content.body;
     this.noteEl.textContent = content.note;
     this.keyEl.classList.toggle("is-visible", this.stage > 0);
+    this.keyEl.classList.toggle("is-final", this.stage === STAGES.length - 1);
+    this.cardEl.classList.toggle("is-final", this.stage === 2 || this.stage === STAGES.length - 1);
     this.steps.forEach((step, index) => {
       step.classList.toggle("is-active", index === this.stage);
       step.classList.toggle("is-past", index < this.stage);
@@ -315,35 +379,60 @@ class ParadoxLab {
     this.prev.disabled = this.stage === 0;
     this.next.disabled = this.stage === STAGES.length - 1;
     this.next.textContent = this.stage === STAGES.length - 1 ? "✓" : "→";
+    if (this.stage === 2) this.cameraGoalDistance = this.choiceCameraDistance;
+    else if (this.stage === STAGES.length - 1) this.cameraGoalDistance = this.finalCameraDistance;
+    else this.cameraGoalDistance = this.baseCameraDistance;
+    if (immediate) this.setCameraDistance(this.cameraGoalDistance);
+    else this.cameraIsTweening = true;
+  }
+
+  setCameraDistance(distance) {
+    const offset = this.camera.position.clone().sub(this.controls.target);
+    if (offset.lengthSq() === 0) offset.set(0, 0, 1);
+    offset.setLength(distance);
+    this.camera.position.copy(this.controls.target).add(offset);
+    this.controls.update();
   }
 
   updateGeometry() {
     const stage = this.visualStage;
-    const segment = Math.min(Math.floor(stage), 2);
+    const segment = Math.min(Math.floor(stage), 3);
     const mix = ease(stage - segment);
-    this.targetGuides.visible = stage > 2.35;
+    this.targetGuides.visible = stage > 3.35;
     this.targetGuides.children.forEach((guide) => {
-      guide.scale.setScalar(clamp((stage - 2.25) / 0.75, 0, 1));
+      guide.scale.setScalar(clamp((stage - 3.25) / 0.75, 0, 1));
     });
-    this.guideSphere.visible = stage < 2.7;
+    this.guideSphere.visible = stage < 3.7;
     if (this.guideSphere.visible) {
-      const fade = stage > 2 ? 1 - (stage - 2) / 0.7 : 1;
+      const fade = stage > 3 ? 1 - (stage - 3) / 0.7 : 1;
       this.guideSphere.children.forEach((child) => (child.material.opacity = child.type === "LineLoop" ? 0.2 * fade : 0.09 * fade));
     }
 
     this.pieces.forEach((piece) => {
       const position = piece.points.geometry.attributes.position.array;
-      let from = piece.original;
-      let to = piece.original;
-      if (segment === 1) to = piece.separated;
-      if (segment === 2) {
-        from = piece.separated;
-        to = piece.doubled;
+      const states = [piece.surface, piece.surface, piece.separated, piece.original, piece.doubled];
+      const from = states[segment];
+      const to = states[segment + 1];
+      if (segment === 1 || segment === 3) {
+        const base = segment === 1 ? piece.surface : piece.original;
+        const targetQuaternion = segment === 1 ? piece.splitQuaternion : piece.finalQuaternion;
+        const targetTranslation = segment === 1 ? piece.splitTranslation : piece.finalTranslation;
+        const quaternion = new THREE.Quaternion().slerpQuaternions(new THREE.Quaternion(), targetQuaternion, mix);
+        const point = new THREE.Vector3();
+        for (let i = 0; i < position.length; i += 3) {
+          point.set(base[i], base[i + 1], base[i + 2]).applyQuaternion(quaternion).addScaledVector(targetTranslation, mix);
+          position[i] = point.x;
+          position[i + 1] = point.y;
+          position[i + 2] = point.z;
+        }
+      } else {
+        for (let i = 0; i < position.length; i += 1) position[i] = from[i] + (to[i] - from[i]) * mix;
       }
-      for (let i = 0; i < position.length; i += 1) position[i] = from[i] + (to[i] - from[i]) * mix;
       piece.points.geometry.attributes.position.needsUpdate = true;
       piece.points.material.color.copy(new THREE.Color("#e5d7ad")).lerp(piece.color, clamp(stage, 0, 1));
       piece.points.material.opacity = 0.7 + Math.min(stage, 1) * 0.18;
+      const finale = clamp(stage - 3, 0, 1);
+      piece.points.material.size = piece.baseSize * (1 + finale * (this.isNarrow ? 2.2 : 0.15));
     });
   }
 
@@ -360,6 +449,15 @@ class ParadoxLab {
     this.visualStage += (this.stage - this.visualStage) * Math.min(1, delta * speed);
     if (Math.abs(this.stage - this.visualStage) < 0.001) this.visualStage = this.stage;
     this.updateGeometry();
+    if (this.cameraIsTweening) {
+      const distance = this.camera.position.distanceTo(this.controls.target);
+      const nextDistance = distance + (this.cameraGoalDistance - distance) * Math.min(1, delta * 2.8);
+      this.setCameraDistance(nextDistance);
+      if (Math.abs(this.cameraGoalDistance - nextDistance) < 0.01) {
+        this.setCameraDistance(this.cameraGoalDistance);
+        this.cameraIsTweening = false;
+      }
+    }
     this.controls.update();
     if (!this.reducedMotion) {
       this.world.position.x += (this.pointer.x * 0.05 - this.world.position.x) * delta;
