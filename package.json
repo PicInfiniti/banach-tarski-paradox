@@ -1,10 +1,10 @@
 {
-  "name": "template-vite",
+  "name": "banach-tarski-visual-essay",
   "private": true,
-  "version": "0.0.1",
+  "version": "1.0.0",
   "type": "module",
   "license": "MIT",
-  "author": "picinfiniti",
+  "description": "An interactive Three.js visual essay about the Banach–Tarski paradox.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

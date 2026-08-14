@@ -1,8 +1,640 @@
-@use 'base/reset'
-@use 'base/variables'
 @use 'base/fonts'
 
-@use 'components/context-menu'
+:root
+  --ink: #eef4ec
+  --muted: #9da9a0
+  --paper: #0b1210
+  --line: rgba(223, 234, 227, .16)
+  --accent: #e9c96f
 
+*
+  box-sizing: border-box
 
+html, body, #app
+  width: 100%
+  min-height: 100%
+  margin: 0
 
+body
+  overflow: hidden
+  background: var(--paper)
+  color: var(--ink)
+  font-family: 'Ubuntu', system-ui, sans-serif
+  font-weight: 300
+
+button, a
+  color: inherit
+  font: inherit
+
+button
+  border: 0
+
+.experience
+  position: relative
+  width: 100vw
+  height: 100svh
+  min-height: 620px
+  overflow: hidden
+  background: radial-gradient(circle at 52% 46%, #1a2822 0, #0d1713 42%, #09100e 76%)
+
+.experience::before
+  content: ''
+  position: absolute
+  inset: 0
+  z-index: 2
+  pointer-events: none
+  opacity: .2
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.22'/%3E%3C/svg%3E")
+
+.ambient
+  position: absolute
+  width: 32vw
+  aspect-ratio: 1
+  border: 1px solid rgba(188, 211, 196, .07)
+  border-radius: 50%
+  pointer-events: none
+
+.ambient::before, .ambient::after
+  content: ''
+  position: absolute
+  inset: 12%
+  border: inherit
+  border-radius: inherit
+
+.ambient::after
+  inset: 29%
+
+.ambient--one
+  top: -20vw
+  left: 20vw
+
+.ambient--two
+  right: -17vw
+  bottom: -15vw
+
+.topbar
+  position: absolute
+  z-index: 5
+  top: 0
+  left: 0
+  width: 100%
+  height: 86px
+  padding: 0 3.5vw
+  display: flex
+  align-items: center
+  justify-content: space-between
+  border-bottom: 1px solid var(--line)
+
+.brand
+  display: flex
+  align-items: center
+  gap: 12px
+  color: var(--ink)
+  text-decoration: none
+  font-size: 12px
+  font-weight: 500
+  letter-spacing: .16em
+  text-transform: uppercase
+
+.brand__mark
+  position: relative
+  display: block
+  width: 30px
+  height: 30px
+  border: 1px solid rgba(238, 244, 236, .55)
+  border-radius: 50%
+
+.brand__mark i
+  position: absolute
+  top: 50%
+  left: 50%
+  width: 23px
+  height: 9px
+  border: 1px solid var(--accent)
+  border-radius: 50%
+  transform: translate(-50%, -50%) rotate(32deg)
+
+.brand__mark i:last-child
+  transform: translate(-50%, -50%) rotate(-32deg)
+
+.topbar__meta
+  display: flex
+  align-items: center
+  gap: 35px
+  color: var(--muted)
+  font-size: 11px
+  letter-spacing: .11em
+  text-transform: uppercase
+
+.text-button
+  padding: 10px 0
+  cursor: pointer
+  background: transparent
+  color: var(--ink)
+  letter-spacing: .1em
+  text-transform: uppercase
+
+.text-button span
+  display: inline-block
+  margin-left: 7px
+  color: var(--accent)
+  transition: transform .2s ease
+
+.text-button:hover span
+  transform: translate(3px, -3px)
+
+.intro
+  position: absolute
+  z-index: 4
+  top: 17.5vh
+  left: 3.5vw
+  width: min(410px, 29vw)
+  pointer-events: none
+
+.eyebrow
+  display: flex
+  align-items: center
+  gap: 10px
+  margin: 0 0 22px
+  color: var(--accent)
+  font-size: 10px
+  font-weight: 500
+  letter-spacing: .2em
+  text-transform: uppercase
+
+.eyebrow > span
+  width: 22px
+  height: 1px
+  background: currentColor
+
+.intro h1, .guide h2
+  margin: 0
+  color: #f2f1e8
+  font-family: Georgia, 'Times New Roman', serif
+  font-size: clamp(48px, 5.2vw, 86px)
+  font-weight: 400
+  line-height: .94
+  letter-spacing: -.055em
+
+.intro h1 em, .guide h2 em
+  color: #c6d8ca
+  font-weight: 400
+
+.lede
+  width: 260px
+  margin: 28px 0 0
+  color: var(--muted)
+  font-size: 14px
+  line-height: 1.65
+
+.viewport
+  position: absolute
+  z-index: 1
+  inset: 86px 0 0
+  cursor: grab
+
+.viewport:active
+  cursor: grabbing
+
+.viewport canvas
+  display: block
+  width: 100%
+  height: 100%
+  outline: none
+
+.stage-card
+  position: absolute
+  z-index: 4
+  top: 16vh
+  right: 3.5vw
+  width: min(330px, 25vw)
+  padding-top: 18px
+  border-top: 1px solid var(--line)
+
+.stage-card__topline
+  display: flex
+  align-items: center
+  gap: 18px
+  margin-bottom: 34px
+  color: var(--accent)
+  font-size: 9px
+  font-weight: 500
+  letter-spacing: .17em
+  text-transform: uppercase
+
+.stage-number
+  display: grid
+  width: 32px
+  height: 32px
+  place-items: center
+  border: 1px solid rgba(233, 201, 111, .45)
+  border-radius: 50%
+
+.stage-title
+  margin: 0 0 18px
+  font-family: Georgia, 'Times New Roman', serif
+  font-size: clamp(28px, 2.4vw, 38px)
+  font-weight: 400
+  letter-spacing: -.035em
+
+.stage-body
+  margin: 0
+  color: #b1beb5
+  font-size: 13px
+  line-height: 1.75
+
+.stage-note
+  display: grid
+  grid-template-columns: 20px 1fr
+  gap: 8px
+  margin-top: 30px
+  padding: 16px 0
+  border-top: 1px solid var(--line)
+  border-bottom: 1px solid var(--line)
+  color: #839187
+
+.stage-note span
+  color: var(--accent)
+  font-size: 10px
+
+.stage-note p
+  margin: 0
+  font-size: 10px
+  line-height: 1.55
+
+.piece-key
+  display: flex
+  gap: 16px
+  margin-top: 18px
+  opacity: 0
+  transform: translateY(5px)
+  transition: opacity .4s ease, transform .4s ease
+
+.piece-key.is-visible
+  opacity: 1
+  transform: none
+
+.piece-key span
+  display: flex
+  align-items: center
+  gap: 5px
+  color: #a7b3ab
+  font-family: Georgia, serif
+  font-size: 12px
+  font-style: italic
+
+.piece-key i
+  width: 5px
+  height: 5px
+  border-radius: 50%
+  background: var(--piece)
+  box-shadow: 0 0 8px var(--piece)
+
+.stage-nav
+  position: absolute
+  z-index: 5
+  bottom: 34px
+  left: 50%
+  display: flex
+  align-items: center
+  gap: 20px
+  transform: translateX(-50%)
+
+.stage-arrow
+  display: grid
+  width: 42px
+  height: 42px
+  place-items: center
+  border: 1px solid var(--line)
+  border-radius: 50%
+  cursor: pointer
+  background: rgba(17, 28, 23, .72)
+  color: var(--ink)
+  transition: border-color .2s ease, background .2s ease
+
+.stage-arrow:hover:not(:disabled)
+  border-color: rgba(233, 201, 111, .6)
+  background: rgba(233, 201, 111, .08)
+
+.stage-arrow:disabled
+  cursor: default
+  opacity: .25
+
+.stage-track
+  position: relative
+  display: flex
+  width: min(34vw, 460px)
+  justify-content: space-between
+
+.stage-track::before
+  content: ''
+  position: absolute
+  top: 26px
+  left: 12px
+  right: 12px
+  height: 1px
+  background: var(--line)
+
+.stage-step
+  position: relative
+  z-index: 1
+  display: flex
+  min-width: 25px
+  padding: 0
+  flex-direction: column
+  align-items: center
+  gap: 8px
+  cursor: pointer
+  background: transparent
+  color: #69766e
+  font-size: 8px
+  letter-spacing: .1em
+  transition: color .25s ease
+
+.stage-step i
+  width: 8px
+  height: 8px
+  border: 2px solid #46534b
+  border-radius: 50%
+  background: #101a16
+  transition: all .25s ease
+
+.stage-step.is-active, .stage-step.is-past
+  color: var(--accent)
+
+.stage-step.is-active i
+  border-color: var(--accent)
+  background: var(--accent)
+  box-shadow: 0 0 0 5px rgba(233, 201, 111, .12)
+
+.stage-step.is-past i
+  border-color: #87958b
+  background: #87958b
+
+.interaction-hint, .figure-label
+  position: absolute
+  z-index: 4
+  bottom: 41px
+  color: #77847b
+  font-size: 9px
+  letter-spacing: .13em
+  text-transform: uppercase
+
+.interaction-hint
+  left: 3.5vw
+  display: flex
+  align-items: center
+  gap: 10px
+
+.mouse-icon
+  position: relative
+  width: 14px
+  height: 20px
+  border: 1px solid #77847b
+  border-radius: 7px
+
+.mouse-icon::before
+  content: ''
+  position: absolute
+  top: 4px
+  left: 6px
+  width: 1px
+  height: 4px
+  background: var(--accent)
+
+.figure-label
+  right: 3.5vw
+  margin: 0
+
+.figure-label span
+  margin-right: 9px
+  color: var(--accent)
+
+.guide
+  width: min(1000px, calc(100vw - 48px))
+  max-height: calc(100svh - 48px)
+  padding: 0
+  overflow: auto
+  border: 1px solid rgba(210, 226, 215, .18)
+  background: #101a16
+  color: var(--ink)
+  box-shadow: 0 40px 100px rgba(0, 0, 0, .6)
+
+.guide::backdrop
+  background: rgba(4, 8, 6, .82)
+  backdrop-filter: blur(10px)
+
+.guide__head
+  display: flex
+  padding: 48px 54px 40px
+  align-items: flex-start
+  justify-content: space-between
+  border-bottom: 1px solid var(--line)
+
+.guide h2
+  font-size: clamp(42px, 5vw, 68px)
+
+.guide__close
+  display: grid
+  width: 42px
+  height: 42px
+  place-items: center
+  border: 1px solid var(--line)
+  border-radius: 50%
+  cursor: pointer
+  background: transparent
+  font-size: 24px
+  font-weight: 200
+
+.guide__grid
+  display: grid
+  grid-template-columns: repeat(2, 1fr)
+
+.guide article
+  min-height: 210px
+  padding: 34px 54px
+  border-right: 1px solid var(--line)
+  border-bottom: 1px solid var(--line)
+
+.guide article:nth-child(2n)
+  border-right: 0
+
+.guide article span
+  color: var(--accent)
+  font-size: 8px
+  font-weight: 500
+  letter-spacing: .16em
+  text-transform: uppercase
+
+.guide article h3
+  margin: 18px 0 10px
+  font-family: Georgia, serif
+  font-size: 23px
+  font-weight: 400
+
+.guide article p
+  margin: 0
+  color: #9ba9a0
+  font-size: 12px
+  line-height: 1.7
+
+.guide footer
+  display: flex
+  padding: 24px 54px
+  align-items: center
+  justify-content: space-between
+  color: #758279
+  font-size: 9px
+  letter-spacing: .13em
+  text-transform: uppercase
+
+.guide footer button
+  cursor: pointer
+  background: transparent
+  color: var(--accent)
+  letter-spacing: .1em
+  text-transform: uppercase
+
+@media (max-width: 980px)
+  .intro
+    top: 13vh
+    width: 42vw
+
+  .intro h1
+    font-size: clamp(44px, 7vw, 70px)
+
+  .stage-card
+    top: auto
+    right: 4vw
+    bottom: 105px
+    width: 36vw
+    padding: 16px 18px
+    border: 1px solid var(--line)
+    background: rgba(9, 16, 14, .68)
+    backdrop-filter: blur(10px)
+
+  .stage-card__topline
+    margin-bottom: 18px
+
+  .stage-title
+    margin-bottom: 10px
+
+  .stage-note
+    display: none
+
+  .figure-label
+    display: none
+
+@media (max-width: 700px)
+  .experience
+    min-height: 580px
+
+  .topbar
+    height: 66px
+    padding: 0 18px
+
+  .brand
+    font-size: 9px
+
+  .brand__mark
+    width: 25px
+    height: 25px
+
+  .edition
+    display: none
+
+  .text-button
+    font-size: 9px
+
+  .intro
+    top: 94px
+    left: 20px
+    width: calc(100% - 40px)
+
+  .eyebrow
+    margin-bottom: 12px
+
+  .intro h1
+    font-size: clamp(40px, 12.5vw, 59px)
+    line-height: .9
+
+  .lede
+    width: 210px
+    margin-top: 16px
+    font-size: 11px
+
+  .viewport
+    inset: 66px 0 0
+    transform: translateY(20px)
+
+  .stage-card
+    right: 16px
+    bottom: 98px
+    left: 16px
+    width: auto
+    padding: 13px 15px
+
+  .stage-card__topline
+    margin-bottom: 8px
+
+  .stage-number
+    width: 24px
+    height: 24px
+
+  .stage-title
+    display: inline
+    margin-right: 6px
+    font-size: 21px
+
+  .stage-body
+    display: inline
+    font-size: 10px
+    line-height: 1.5
+
+  .piece-key
+    display: none
+
+  .stage-nav
+    right: 14px
+    bottom: 26px
+    left: 14px
+    gap: 12px
+    transform: none
+
+  .stage-track
+    width: auto
+    flex: 1
+
+  .stage-arrow
+    width: 36px
+    height: 36px
+
+  .interaction-hint
+    display: none
+
+  .guide
+    width: calc(100vw - 20px)
+    max-height: calc(100svh - 20px)
+
+  .guide__head
+    padding: 28px 22px
+
+  .guide h2
+    font-size: 39px
+
+  .guide__grid
+    grid-template-columns: 1fr
+
+  .guide article
+    min-height: 0
+    padding: 25px 22px
+    border-right: 0
+
+  .guide footer
+    padding: 20px 22px
+    gap: 18px
+
+@media (prefers-reduced-motion: reduce)
+  *, *::before, *::after
+    scroll-behavior: auto !important
+    transition-duration: .01ms !important
