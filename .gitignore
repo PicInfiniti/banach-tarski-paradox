@@ -22,3 +22,12 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+main.synctex.gz
+main.out
+main.aux
+main.bbl
+main.blg
+main.fdb_latexmk
+main.fls
+main.log
+

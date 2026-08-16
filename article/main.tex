@@ -1,0 +1,442 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{mathrsfs}
+\usepackage{setspace,graphicx,array,tikz,url}
+\usepackage{cite}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage[top=3cm,left=3cm,right=3cm,bottom=3cm]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{etoolbox}
+\usepackage{microtype}
+
+\patchcmd{\thebibliography}
+  {\advance\leftmargin\labelsep}
+  {\labelsep=.5em\leftmargin=2.5em\itemindent=0em\advance\leftmargin\labelsep}
+  {}{}
+
+\titlespacing*{\section}{0pt}{3em}{2em}
+
+\setstretch{1.1}
+
+\pagestyle{fancy}
+\fancyhf{} % Clear header and footer
+\fancyfoot[C]{\footnotesize \thepage\ of \pageref{LastPage}}
+
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\qedsymbol}{$\blacksquare$}
+
+\newtheoremstyle{spaced}
+  {15pt}   % Space above (e.g., 10pt)
+  {20pt}   % Space below (e.g., 10pt)
+  {\itshape} % Body font (e.g., italic)
+  {}       % Indentation of the header
+  {\bfseries} % Theorem header font (e.g., bold)
+  {.}      % Punctuation after theorem header
+  {.5em}   % Space after theorem header
+  {}       % Theorem head spec (can be left empty)
+
+\theoremstyle{spaced}
+\newtheorem{conjecture}{Conjecture}[section]
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{definition}{Definition}[section]
+\newtheorem{example}{Example}[section]
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{proposition}{Proposition}[section]
+\newtheorem{corollary}{Corollary}[section]
+\newtheorem{remark}{Remark}[section]
+
+\title{Banach Tarski Paradox}
+\author{
+  Mohammad Javad Moghaddas Mehr\thanks{m.moghadas11235@gmail.com}}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+\vspace{5em}
+\begin{abstract}
+	This paper gives a self-contained proof of the Banach--Tarski paradox. We outline the foundational context, develop the required group-theoretic machinery, construct a paradoxical decomposition of the sphere, and extend it to a solid ball using equidecomposability. The proof illustrates how free group actions and the Axiom of Choice combine to produce the classical paradox.
+\end{abstract}
+
+\small{\textbf{Keywords:} Banach–Tarski Paradox, Axiom of Choice, Measure Theory, Paradoxical Decomposition}
+
+
+\section{Introduction}
+
+The problem of assigning a meaningful notion of ``size'' to arbitrary subsets of
+$\mathbb{R}^n$ lies at the heart of measure theory and modern analysis. Classical
+intuition suggests that such a notion should extend the familiar geometric
+concepts of length, area, and volume, and should respect the underlying
+symmetries of Euclidean space. One is therefore naturally led to seek a measure
+$\mu$ defined on all subsets of $\mathbb{R}^n$ that satisfies the following basic
+requirements:
+\begin{enumerate}
+	\item \emph{countable additivity} on disjoint families;
+	\item \emph{invariance} under rigid motions;
+	\item \emph{normalization} on standard sets, such as $\mu([0,1]^n)=1$.
+\end{enumerate}
+
+A classical argument shows that these requirements are incompatible.
+By using the axiom of choice to select one representative from each orbit under
+rational translation, one can partition the unit interval in a way that forces any
+countably additive, translation-invariant measure to assign contradictory values.
+Thus no such measure can exist on all subsets of $\mathbb{R}$.
+
+In higher dimensions an even more striking phenomenon occurs. In 1924 Banach and
+Tarski~\cite{banach1924decomposition} showed that in $\mathbb{R}^n$ for $n\ge 3$,
+one may dispense with countable additivity entirely and still encounter
+impossibility. They proved that any two bounded open sets in $\mathbb{R}^3$ are
+\emph{equidecomposable}: each can be partitioned into finitely many pieces that
+can be rearranged by rigid motions to form the other. In particular, a solid
+ball can be divided into finitely many disjoint, highly nonmeasurable pieces,
+which may then be reassembled into two balls congruent to the original. A sharp
+result due to Robinson~\cite{robinson1947decomposition} shows that such a
+doubling of the ball can be accomplished with \emph{exactly} five, and fewer than five pieces will not suffice.
+
+At the conceptual core of the Banach--Tarski paradox is the idea of a
+\emph{paradoxical decomposition}: a set that can be partitioned into finitely
+many pieces which, after applying suitable isometries, form two disjoint copies
+of the original set. Tarski later demonstrated that such decompositions occur
+precisely for group actions containing a nonabelian free subgroup. This insight
+places group theory—particularly the behavior of free groups and their
+actions—at the center of the phenomenon. The classical proof constructs a
+paradoxical decomposition of the free group $F_2$, embeds $F_2$ into
+$\mathrm{SO}(3)$, and uses this embedding to transfer the paradox to the unit
+sphere $S^2$. A radial extension then propagates the decomposition to the entire
+unit ball.
+
+The purpose of this report is to give a streamlined, self-contained exposition of
+this strategy. In Section~2 we review the relevant concepts from group actions,
+equidecomposability, and paradoxical decompositions. Section~3 develops the
+proof: we obtain a paradoxical decomposition of the free group $F_2$, embed it
+into $\mathrm{SO}(3)$, transfer the resulting decomposition to $S^2$, and extend
+it to the solid unit ball via radial invariance. The presentation emphasizes the
+interplay between group-theoretic structure and the axiom of choice, showing how
+these ingredients combine to yield one of the most remarkable results in modern
+set theory and geometric analysis.
+
+\section{Preliminaries}
+In this section we introduce the basic notions required for the Banach--Tarski paradox.
+Throughout, $G$ denotes a group and $X$ a set.
+Our goal is to understand how group actions allow us to ``move pieces around,'' and how
+such motions lead to equidecompositions and paradoxical decompositions.
+
+\begin{definition}[Group Action]
+	A \emph{(left) action} of $G$ on $X$ is a function
+	\[
+		G \times X \longrightarrow X, \qquad (g,x) \mapsto g \cdot x,
+	\]
+	such that for all $g,h \in G$ and all $x \in X$,
+	\begin{enumerate}
+		\item $e \cdot x = x$, where $e$ is the identity element of $G$;
+		\item $(gh)\cdot x = g \cdot (h \cdot x)$.
+	\end{enumerate}
+	In this situation we say that $G$ \emph{acts} on $X$.
+\end{definition}
+
+\begin{remark}
+	A \emph{right} action is defined similarly using a function
+	$X \times G \to X$ and the rule
+	\((x \cdot g)\cdot h = x \cdot (gh)\).
+\end{remark}
+
+\begin{definition}[Equidecomposability]
+	Let $G$ act on a set $X$.
+	Two subsets $A,B \subseteq X$ are \emph{$G$-equidecomposable} if there exist
+	pairwise disjoint subsets $A_1,\dots,A_n \subseteq A$ and elements
+	$g_1,\dots,g_n \in G$ such that
+	\[
+		B = \bigcup_{i=1}^n g_i \cdot A_i.
+	\]
+	In this case we write $A \sim_G B$ and say that $A$ can be partitioned into finitely
+	many pieces and moved by elements of $G$ to form $B$.
+\end{definition}
+
+\begin{definition}[Paradoxical Decomposition]
+	Let $G$ act on $X$.
+	A subset $A \subseteq X$ admits a \emph{paradoxical decomposition} if there exist
+	pairwise disjoint subsets
+	\[
+		A_1,\dots,A_m, \qquad B_1,\dots,B_n \subseteq A
+	\]
+	and elements
+	\[
+		g_1,\dots,g_m, \qquad h_1,\dots,h_n \in G
+	\]
+	such that
+	\[
+		A = \bigcup_{i=1}^m g_i \cdot A_i
+		\qquad\text{and}\qquad
+		A = \bigcup_{j=1}^n h_j \cdot B_j.
+	\]
+	That is, $A$ can be partitioned into finitely many pieces which, after applying
+	elements of $G$, form two disjoint copies of $A$.
+\end{definition}
+
+\begin{lemma}\label{lem:equidecomp_preserves_paradoxical}
+	If $A \sim_G B$ and $A$ admits a paradoxical decomposition under $G$, then
+	$B$ also admits a paradoxical decomposition under $G$.
+\end{lemma}
+
+\begin{proof}
+	Suppose
+	\[
+		A = \bigcup_{i=1}^m g_i A_i = \bigcup_{j=1}^n h_j B_j
+	\]
+	is paradoxical, and that $A \sim_G B$ via a decomposition
+	\[
+		B = \bigcup_{k=1}^r t_k C_k, \qquad C_k \subseteq A.
+	\]
+	Replacing each $A_i$ and $B_j$ by its intersections with the $C_k$ (and then applying
+	the corresponding $t_k$) yields a paradoxical decomposition of $B$.
+\end{proof}
+
+\begin{remark}\label{rem:countable_sets harmless}
+	Removing a countable subset does not affect equidecomposability or paradoxicality.
+	If $D \subset X$ is countable and $G$ acts on $X$, then $X$ is $G$-equidecomposable
+	with $X \setminus D$.
+	This follows from the fact that a countable set can be ``absorbed'' into a single
+	piece of any finite equidecomposition by sending its points into an infinite orbit.
+\end{remark}
+
+A paradoxical decomposition is the formal mechanism behind the Banach--Tarski paradox.
+In Theorem~\ref{thm:bt} we will show that the closed unit ball
+\(
+B = \{ x \in \mathbb{R}^3 : \|x\| \le 1 \}
+\)
+admits a paradoxical decomposition under the action of the group of rotations.
+In particular, $B$ is equidecomposable with two disjoint copies of itself.
+
+\section{The Banach--Tarski Paradox}
+
+In this section we give a detailed proof of the Banach--Tarski paradox following the
+classical strategy:
+\begin{enumerate}
+	\item construct a paradoxical decomposition of $F_2$; And realize this free group as a subgroup of the rotation group $\mathrm{SO}(3)$;
+	\item transfer the paradoxical decomposition from $F_2$ to the unit sphere $S^2$;
+	\item extend the paradoxical decomposition of $S^2$ to the solid unit ball in $\mathbb{R}^3$.
+\end{enumerate}
+
+Throughout, $G$-equidecomposability and paradoxical decomposition are meant in the
+sense introduced in Section~2.
+
+\subsection{A paradoxical decomposition of the free group $F_2$}
+Let $F_2$ be the free group on generators $a$ and $b$, equipped with its standard
+description in terms of reduced words.
+
+\begin{definition}
+	A word \(w = x_1 x_2 \cdots x_n\) in the alphabet
+	\(\{a, a^{-1}, b, b^{-1}\}\) is \emph{reduced} if no letter is adjacent to its
+	inverse.
+	The free group \(F_2\) is the set of reduced words together with the
+	empty word \(e\), with multiplication given by concatenation followed by
+	cancellation of all occurrences of \(x x^{-1}\) and \(x^{-1} x\).
+\end{definition}
+
+Every nontrivial element of \(F_2\) begins with exactly one of the letters
+\(a, a^{-1}, b,\) or \(b^{-1}\).  Define the corresponding subsets:
+\[
+	\begin{aligned}
+		S(a)      & = \{\, w \ne e : w \text{ begins with } a \,\},      \\
+		S(a^{-1}) & = \{\, w \ne e : w \text{ begins with } a^{-1} \,\}, \\
+		S(b)      & = \{\, w \ne e : w \text{ begins with } b \,\},      \\
+		S(b^{-1}) & = \{\, w \ne e : w \text{ begins with } b^{-1} \,\}.
+	\end{aligned}
+\]
+These four sets are disjoint and partition all nontrivial words, giving
+\begin{equation}\label{eq:F2partition-clean}
+	F_2 = \{e\} \,\cup\, S(a) \,\cup\, S(a^{-1}) \,\cup\, S(b) \,\cup\, S(b^{-1}).
+\end{equation}
+
+For any \(w \in S(a^{-1})\) we may write \(w = a^{-1} u\), so
+\(
+aw = aa^{-1} u \to u
+\)
+after reduction.
+Conversely, every reduced word not beginning with \(a\) arises uniquely in this way.
+Applying the same reasoning for \(b\), we obtain two disjoint decompositions:
+\[
+	F_2 = S(a) \,\cup\, a S(a^{-1}),
+	\qquad\text{and}\qquad
+	F_2 = S(b) \,\cup\, b S(b^{-1}).
+\]
+
+Each of these equalities expresses \(F_2\) as a finite union of disjoint pieces
+that are moved by a single group element (namely \(a\) or \(b\)) to reassemble the
+whole group.  Taken together, they give two different reassemblies of \(F_2\)
+from finitely many translated pieces.
+
+\begin{corollary}\label{cor:F2_paradoxical-clean}
+	The free group \(F_2\), acting on itself by left translation, admits a paradoxical
+	decomposition.  In particular, \(F_2\) is \(F_2\)-paradoxical.
+\end{corollary}
+
+
+\begin{theorem}\label{thm:free_subgroup_SO3-updated}
+	There exist rotations $A,B\in \mathrm{SO}(3)$ such that the subgroup
+	\(
+	H = \langle A,B\rangle
+	\)
+	is isomorphic to $F_{2}$.\end{theorem}
+\begin{proof}[Sketch]
+	Choose two orthogonal axes and a rotation angle
+	\(\theta = \arccos(1/3)\).
+	Let $A$ and $B$ be rotations by $\theta$ about these axes.
+	A classical coordinate argument shows that no nontrivial reduced word in $A^{\pm1}, B^{\pm1}$
+	fixes the point $(1,0,0)$, hence no reduced word represents the identity rotation.
+	Thus $\langle A,B\rangle$ is a free subgroup on two generators.
+\end{proof}
+
+We henceforth identify $F_2$ with its copy
+\(H = \langle A,B\rangle \subset \mathrm{SO}(3)\).
+
+\subsection{A paradoxical decomposition of the sphere}
+Let $S^2$ be the unit sphere.
+The action of $H$ on $S^2$ is not free everywhere: rotations have two fixed points each.
+
+\begin{lemma}\label{lem:fixed_points_countable_polished}
+	Let $D\subset S^{2}$ be the set of points fixed by some nontrivial element of $H$. Then $D$ is countable.
+\end{lemma}
+
+
+\begin{proof}
+	Every nontrivial rotation fixes exactly two antipodal points, and $H$ is countable.
+	Thus $D$ is a countable union of two-point sets.
+\end{proof}
+
+Let \(S^2_0 := S^2 \setminus D\).
+The action of \(H\) on \(S^2_0\) is free.
+By the axiom of choice, we may select a set \(M \subset S^2_0\) containing exactly one
+representative from each \(H\)-orbit.
+The map
+\[
+	H\times M \to S^2_0,\qquad (h,m)\mapsto h\cdot m
+\]
+is bijective.
+Let
+\[
+	H = \bigcup_{i=1}^{k} E_i
+\]
+be the finite partition of $H$. For each \(i\) define
+\[
+	E_i \cdot M := \{ h\cdot m : h\in E_i,\ m\in M\}.
+\]
+
+\noindent Then sets $E_i\cdot M$ form a partition of $S^2_0$.
+
+\begin{proposition}\label{prop:S2_paradoxical_noD-updated}
+	$S^2_0$ admits a paradoxical decomposition under the action of $H$.
+\end{proposition}
+
+\begin{proof}
+	Apply the paradoxical decomposition of $H$ and transfer each piece $E_i$
+	to $E_i\cdot M$.
+	The relations are preserved because the action of $H$ on $S^2_0$ is free.
+\end{proof}
+
+\begin{proposition}\label{prop:S2_paradoxical_noD-updated}
+	\(S^2_0\) admits a paradoxical decomposition under the action of \(H\).
+\end{proposition}
+
+\begin{proof}
+	Transfer the paradoxical decomposition of \(H\) to \(S^2_0\) using the bijection
+	\(H\times M\to S^2_0\).
+	We obtain disjoint families
+	\[
+		A_i\cdot M,\qquad B_j\cdot M
+	\]
+	whose translates satisfy
+	\[
+		S^2_0=\bigcup_{i=1}^m g_i(A_i\cdot M)
+		\qquad\text{and}\qquad
+		S^2_0=\bigcup_{j=1}^n h_j(B_j\cdot M),
+	\]
+	which is a paradoxical decomposition of \(S^2_0\).
+\end{proof}
+
+To finish, we restore the omitted pole points; being countable, they do not affect
+equidecomposability.
+
+\begin{lemma}\label{lem:S2_equidecomp_fullsphere-updated}
+	$S^2$ and $S^2_0$ are $H$-equidecomposable.
+\end{lemma}
+
+\begin{proof}
+	$D$ is countable, so by Remark~\ref{rem:countable_sets harmless},
+	removing $D$ does not affect equidecomposability.
+	Thus
+	\[
+		S^2 \sim_H S^2 \setminus D = S^2_0.
+	\]
+\end{proof}
+
+\begin{corollary}\label{cor:S2_paradoxical-updated}
+	The unit sphere $S^2$ admits a paradoxical decomposition under rotations.
+\end{corollary}
+
+\subsection{From the sphere to the ball}
+
+We now extend the paradoxical decomposition of the sphere to the closed unit ball
+\(
+B = \{x \in \mathbb{R}^3 : \|x\|\le 1\}.
+\)
+
+\begin{lemma}
+	If \(S^2 = \bigcup A_i\) is paradoxical under rotations, then the sets
+	\[
+		\widetilde{A}_i := \{ r x : x\in A_i,\ 0<r\le 1 \}
+	\]
+	form a paradoxical decomposition of \(B\setminus\{0\}\).
+\end{lemma}
+
+\begin{proof}
+	Every point of \(B\setminus\{0\}\) has a unique radial representation
+	\(x = r u\) with \(u\in S^2\) and \(0<r\le1\).
+	Rotations preserve radial lines:
+	\(
+	R(rx) = r\,R(x).
+	\)
+	Hence any paradoxical decomposition of \(S^2\) lifts along radial segments
+	to a paradoxical decomposition of \(B\setminus\{0\}\).
+\end{proof}
+
+Finally we reincorporate the center point.
+
+\begin{lemma}\label{lem:ball_center_equidecomp-updated}
+	\(B\) and \(B\setminus\{0\}\) are equidecomposable.
+\end{lemma}
+
+\begin{proof}
+	The removed set \(\{0\}\) is countable, so by
+	Remark~\ref{rem:countable_sets harmless} we have
+	\(
+	B \sim B\setminus\{0\}.
+	\)
+\end{proof}
+
+\begin{theorem}[Banach--Tarski Paradox]\label{thm:bt}
+	The closed unit ball \(B\subset\mathbb{R}^3\) admits a paradoxical
+	decomposition under rotations.
+	In particular, \(B\) is equidecomposable with two disjoint copies of itself.
+\end{theorem}
+
+\begin{proof}
+	By Corollary~\ref{cor:S2_paradoxical-updated}, the sphere \(S^2\) is paradoxical.
+	Radial extension gives a paradoxical decomposition of \(B\setminus\{0\}\).
+	By Lemma~\ref{lem:ball_center_equidecomp-updated},
+	\(B \sim B\setminus\{0\}\).
+	Since paradoxicality is preserved under equidecomposability
+	(Lemma~\ref{lem:equidecomp_preserves_paradoxical}),
+	the ball \(B\) itself is paradoxical.
+\end{proof}
+
+
+\newpage
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}
