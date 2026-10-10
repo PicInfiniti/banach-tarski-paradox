@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import paperUrl from "../main.pdf?url";
+import paperUrl from "../article/main.pdf?url";
 import "./assets/sass/main.sass";
 
 const STAGES = [

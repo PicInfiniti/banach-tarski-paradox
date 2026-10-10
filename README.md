@@ -46,7 +46,7 @@ In particular:
 
 ## Source paper
 
-The repository includes **[Banach–Tarski Paradox: a self-contained proof](./main.pdf)** by Mohammad Javad Moghaddas Mehr (2026).
+The repository includes **[Banach–Tarski Paradox: a self-contained proof](./article/main.pdf)** by Mohammad Javad Moghaddas Mehr (2026).
 
 The paper develops the construction through:
 

@@ -194,20 +194,34 @@ such motions lead to equidecompositions and paradoxical decompositions.
 	the corresponding $t_k$) yields a paradoxical decomposition of $B$.
 \end{proof}
 
-\begin{remark}\label{rem:countable_sets harmless}
-	Removing a countable subset does not affect equidecomposability or paradoxicality.
-	If $D \subset X$ is countable and $G$ acts on $X$, then $X$ is $G$-equidecomposable
-	with $X \setminus D$.
-	This follows from the fact that a countable set can be ``absorbed'' into a single
-	piece of any finite equidecomposition by sending its points into an infinite orbit.
-\end{remark}
+\begin{lemma}[Absorption by disjoint translates]\label{lem:disjoint_translate_absorption}
+	Let $G$ act on $X$, and let $D\subseteq A\subseteq X$.
+	Suppose there exists $g\in G$ such that the sets $g^nD$, for
+	$n=0,1,2,\dots$, are pairwise disjoint and all lie in $A$.
+	Then $A\sim_G A\setminus D$.
+\end{lemma}
+
+\begin{proof}
+	Set
+	\[
+		C=\bigcup_{n=0}^{\infty}g^nD\subseteq A.
+	\]
+	The disjointness assumption gives $gC=C\setminus D$.
+	Partition $A$ into $C$ and $A\setminus C$. Apply $g$ to the first piece
+	and the identity to the second. Their images form the disjoint union
+	\[
+		gC\sqcup(A\setminus C)=A\setminus D,
+	\]
+	which proves the claimed two-piece equidecomposition.
+\end{proof}
 
 A paradoxical decomposition is the formal mechanism behind the Banach--Tarski paradox.
 In Theorem~\ref{thm:bt} we will show that the closed unit ball
 \(
 B = \{ x \in \mathbb{R}^3 : \|x\| \le 1 \}
 \)
-admits a paradoxical decomposition under the action of the group of rotations.
+admits a paradoxical decomposition under the group of orientation-preserving
+rigid motions of $\mathbb{R}^3$.
 In particular, $B$ is equidecomposable with two disjoint copies of itself.
 
 \section{The Banach--Tarski Paradox}
@@ -357,25 +371,43 @@ be the finite partition of $H$. For each \(i\) define
 	which is a paradoxical decomposition of \(S^2_0\).
 \end{proof}
 
-To finish, we restore the omitted pole points; being countable, they do not affect
-equidecomposability.
+To restore the omitted pole points, we enlarge the permitted group from $H$
+to $\mathrm{SO}(3)$ and construct a rotation satisfying the absorption lemma.
 
 \begin{lemma}\label{lem:S2_equidecomp_fullsphere-updated}
-	$S^2$ and $S^2_0$ are $H$-equidecomposable.
+	$S^2$ and $S^2_0$ are $\mathrm{SO}(3)$-equidecomposable.
 \end{lemma}
 
 \begin{proof}
-	$D$ is countable, so by Remark~\ref{rem:countable_sets harmless},
-	removing $D$ does not affect equidecomposability.
-	Thus
+	Since $D$ is countable, choose an axis through the origin whose two poles
+	are outside $D$. Let $\rho_\theta$ denote rotation by angle $\theta$ about
+	this axis. For fixed $d,d'\in D$ and a positive integer $k$, the equation
+	$\rho_\theta^k d=d'$ excludes only finitely many angles in $[0,2\pi)$:
+	neither point lies on the axis, so at most one angle modulo $2\pi$ sends
+	$d$ to $d'$, and it has at most $k$ preimages under multiplication by $k$.
+	There are countably many triples $(d,d',k)$, so we may choose an angle
+	avoiding all these equations. Write $\rho$ for the resulting rotation.
+
+	The sets $\rho^nD$, $n\ge0$, are pairwise disjoint. Indeed, an intersection
+	$\rho^nd=\rho^md'$ with $n>m$ would give $\rho^{n-m}d=d'$, contrary to
+	our choice. They all lie in $S^2$, so
+	Lemma~\ref{lem:disjoint_translate_absorption}, with $A=S^2$ and $g=\rho$, gives
 	\[
-		S^2 \sim_H S^2 \setminus D = S^2_0.
+		S^2 \sim_{\mathrm{SO}(3)} S^2 \setminus D = S^2_0.
 	\]
 \end{proof}
 
 \begin{corollary}\label{cor:S2_paradoxical-updated}
 	The unit sphere $S^2$ admits a paradoxical decomposition under rotations.
 \end{corollary}
+
+\begin{proof}
+	The $H$-paradoxical decomposition of $S^2_0$ is also a
+	$\mathrm{SO}(3)$-paradoxical decomposition, since $H\subseteq\mathrm{SO}(3)$.
+	The preceding lemma and symmetry of equidecomposability give
+	$S^2_0\sim_{\mathrm{SO}(3)}S^2$.
+	Apply Lemma~\ref{lem:equidecomp_preserves_paradoxical}.
+\end{proof}
 
 \subsection{From the sphere to the ball}
 
@@ -403,34 +435,49 @@ B = \{x \in \mathbb{R}^3 : \|x\|\le 1\}.
 	to a paradoxical decomposition of \(B\setminus\{0\}\).
 \end{proof}
 
-Finally we reincorporate the center point.
+Finally we reincorporate the center point. For this step, let $\mathcal G$
+be the group of orientation-preserving rigid motions of $\mathbb{R}^3$.
+It contains $\mathrm{SO}(3)$ and also rotations about axes away from the origin.
 
 \begin{lemma}\label{lem:ball_center_equidecomp-updated}
-	\(B\) and \(B\setminus\{0\}\) are equidecomposable.
+	\(B\) and \(B\setminus\{0\}\) are $\mathcal G$-equidecomposable.
 \end{lemma}
 
 \begin{proof}
-	The removed set \(\{0\}\) is countable, so by
-	Remark~\ref{rem:countable_sets harmless} we have
-	\(
-	B \sim B\setminus\{0\}.
-	\)
+	Consider the circle
+	\[
+		\Gamma=\left\{\left(\tfrac14+\tfrac14\cos t,
+		\tfrac14\sin t,0\right):t\in\mathbb R\right\}.
+	\]
+	It passes through the origin and lies entirely in $B$, since each of its
+	points has norm at most $1/2$. Let $\sigma\in\mathcal G$ be rotation
+	by $2\pi\alpha$, where $\alpha$ is irrational, about the line
+	$\{(1/4,0,z):z\in\mathbb R\}$ through the center of this circle.
+	Then $\sigma$ preserves $\Gamma$, and the points $\sigma^n(0)$, $n\ge0$,
+	are distinct: an equality would imply $(n-m)\alpha\in\mathbb Z$ for $n\ne m$.
+	Thus the sets $\sigma^n\{0\}$ are pairwise disjoint and all lie in $B$.
+	Lemma~\ref{lem:disjoint_translate_absorption} gives
+	\[
+		B\sim_{\mathcal G}B\setminus\{0\}.
+	\]
 \end{proof}
 
 \begin{theorem}[Banach--Tarski Paradox]\label{thm:bt}
 	The closed unit ball \(B\subset\mathbb{R}^3\) admits a paradoxical
-	decomposition under rotations.
+	decomposition under orientation-preserving rigid motions.
 	In particular, \(B\) is equidecomposable with two disjoint copies of itself.
 \end{theorem}
 
 \begin{proof}
-	By Corollary~\ref{cor:S2_paradoxical-updated}, the sphere \(S^2\) is paradoxical.
-	Radial extension gives a paradoxical decomposition of \(B\setminus\{0\}\).
-	By Lemma~\ref{lem:ball_center_equidecomp-updated},
-	\(B \sim B\setminus\{0\}\).
-	Since paradoxicality is preserved under equidecomposability
-	(Lemma~\ref{lem:equidecomp_preserves_paradoxical}),
-	the ball \(B\) itself is paradoxical.
+	By Corollary~\ref{cor:S2_paradoxical-updated}, the sphere \(S^2\) is
+	$\mathrm{SO}(3)$-paradoxical. Radial extension gives a
+	$\mathrm{SO}(3)$-paradoxical decomposition of \(B\setminus\{0\}\),
+	which is also $\mathcal G$-paradoxical.
+	By Lemma~\ref{lem:ball_center_equidecomp-updated} and symmetry,
+	$B\setminus\{0\}\sim_{\mathcal G}B$.
+	Lemma~\ref{lem:equidecomp_preserves_paradoxical} therefore makes $B$
+	$\mathcal G$-paradoxical. Finally, translate the two reassembled copies
+	far enough apart to obtain two disjoint balls congruent to $B$.
 \end{proof}
 
 
