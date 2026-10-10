@@ -689,6 +689,18 @@ button
     padding: 20px 22px
     gap: 18px
 
+@media (max-height: 620px)
+  body
+    overflow-y: auto
+
+@media (min-width: 701px) and (max-height: 620px)
+  .intro
+    top: 110px
+
+  .stage-card
+    top: auto
+    bottom: 105px
+
 @media (prefers-reduced-motion: reduce)
   *, *::before, *::after
     scroll-behavior: auto !important
