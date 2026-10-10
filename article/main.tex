@@ -183,16 +183,33 @@ such motions lead to equidecompositions and paradoxical decompositions.
 \end{lemma}
 
 \begin{proof}
-	Suppose
+	Let $P_i,Q_j\subseteq A$ be the mutually disjoint source pieces of a
+	paradoxical decomposition. If images overlap within either reassembly,
+	assign each point to its first image piece and restrict the source pieces
+	to the corresponding preimages. Thus we may assume
 	\[
-		A = \bigcup_{i=1}^m g_i A_i = \bigcup_{j=1}^n h_j B_j
+		A=\bigsqcup_i g_iP_i=\bigsqcup_j h_jQ_j.
 	\]
-	is paradoxical, and that $A \sim_G B$ via a decomposition
+	Write the given equidecomposition as
 	\[
-		B = \bigcup_{k=1}^r t_k C_k, \qquad C_k \subseteq A.
+		A=\bigsqcup_{k=1}^r C_k,
+		\qquad B=\bigsqcup_{k=1}^r t_kC_k.
 	\]
-	Replacing each $A_i$ and $B_j$ by its intersections with the $C_k$ (and then applying
-	the corresponding $t_k$) yields a paradoxical decomposition of $B$.
+	For each $i,k,\ell$, form the source piece in $B$
+	\[
+		P'_{ik\ell}=t_k\bigl(C_k\cap P_i\cap g_i^{-1}C_\ell\bigr).
+	\]
+	Move it by $t_\ell g_i t_k^{-1}$. Its image is
+	$t_\ell(g_i(C_k\cap P_i)\cap C_\ell)$, and these images partition $B$.
+	Likewise, the pieces
+	\[
+		Q'_{jk\ell}=t_k\bigl(C_k\cap Q_j\cap h_j^{-1}C_\ell\bigr)
+	\]
+	move by $t_\ell h_jt_k^{-1}$ to give another partition of $B$.
+	All the $P'$ and $Q'$ source pieces are mutually disjoint: within each
+	$t_kC_k$, the intersections refine the mutually disjoint original pieces,
+	and the $t_kC_k$ themselves are disjoint. There are only finitely many
+	pieces, so this is a paradoxical decomposition of $B$.
 \end{proof}
 
 \begin{lemma}[Absorption by disjoint translates]\label{lem:disjoint_translate_absorption}
