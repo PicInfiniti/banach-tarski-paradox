@@ -357,7 +357,8 @@ class ParadoxLab {
 
   setStage(index, immediate = false) {
     this.stage = clamp(index, 0, STAGES.length - 1);
-    if (immediate) this.visualStage = this.stage;
+    const snap = immediate || this.reducedMotion;
+    if (snap) this.visualStage = this.stage;
     const url = new URL(window.location.href);
     if (this.stage === 0) url.searchParams.delete("stage");
     else url.searchParams.set("stage", this.stage);
@@ -380,8 +381,8 @@ class ParadoxLab {
     this.next.disabled = this.stage === STAGES.length - 1;
     this.next.textContent = this.stage === STAGES.length - 1 ? "✓" : "→";
     this.updateCameraGoal();
-    if (immediate) this.setCameraDistance(this.cameraGoalDistance);
-    else this.cameraIsTweening = true;
+    this.cameraIsTweening = !snap;
+    if (snap) this.setCameraDistance(this.cameraGoalDistance);
   }
 
   updateCameraGoal() {
@@ -460,8 +461,8 @@ class ParadoxLab {
 
   animate() {
     const delta = Math.min(this.clock.getDelta(), 0.05);
-    const speed = this.reducedMotion ? 10 : 2.6;
-    this.visualStage += (this.stage - this.visualStage) * Math.min(1, delta * speed);
+    if (this.reducedMotion) this.visualStage = this.stage;
+    else this.visualStage += (this.stage - this.visualStage) * Math.min(1, delta * 2.6);
     if (Math.abs(this.stage - this.visualStage) < 0.001) this.visualStage = this.stage;
     this.updateGeometry();
     if (this.cameraIsTweening) {
