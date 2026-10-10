@@ -168,7 +168,7 @@ class ParadoxLab {
 
   setupScene() {
     this.scene = new THREE.Scene();
-    this.isNarrow = window.innerWidth < 700;
+    this.isNarrow = window.innerWidth <= 700;
     this.camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
     this.camera.position.set(0, 0.15, 6.2);
 
@@ -379,11 +379,15 @@ class ParadoxLab {
     this.prev.disabled = this.stage === 0;
     this.next.disabled = this.stage === STAGES.length - 1;
     this.next.textContent = this.stage === STAGES.length - 1 ? "✓" : "→";
+    this.updateCameraGoal();
+    if (immediate) this.setCameraDistance(this.cameraGoalDistance);
+    else this.cameraIsTweening = true;
+  }
+
+  updateCameraGoal() {
     if (this.stage === 2) this.cameraGoalDistance = this.choiceCameraDistance;
     else if (this.stage === STAGES.length - 1) this.cameraGoalDistance = this.finalCameraDistance;
     else this.cameraGoalDistance = this.baseCameraDistance;
-    if (immediate) this.setCameraDistance(this.cameraGoalDistance);
-    else this.cameraIsTweening = true;
   }
 
   setCameraDistance(distance) {
@@ -437,10 +441,21 @@ class ParadoxLab {
   }
 
   resize() {
+    const wasNarrow = this.isNarrow;
+    this.isNarrow = window.innerWidth <= 700;
+    this.controls.maxDistance = this.isNarrow ? 24 : 12;
+    this.choiceCameraDistance = this.isNarrow ? 17.5 : 10;
+    this.finalCameraDistance = this.isNarrow ? 19.5 : 9.2;
+    this.updateCameraGoal();
+
     const { clientWidth, clientHeight } = this.viewport;
     this.camera.aspect = clientWidth / clientHeight;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(clientWidth, clientHeight, false);
+    if (wasNarrow !== this.isNarrow) {
+      this.cameraIsTweening = false;
+      this.setCameraDistance(this.cameraGoalDistance);
+    }
   }
 
   animate() {
