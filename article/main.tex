@@ -295,14 +295,65 @@ from finitely many translated pieces.
 	\(
 	H = \langle A,B\rangle
 	\)
-	is isomorphic to $F_{2}$.\end{theorem}
-\begin{proof}[Sketch]
-	Choose two orthogonal axes and a rotation angle
-	\(\theta = \arccos(1/3)\).
-	Let $A$ and $B$ be rotations by $\theta$ about these axes.
-	A classical coordinate argument shows that no nontrivial reduced word in $A^{\pm1}, B^{\pm1}$
-	fixes the point $(1,0,0)$, hence no reduced word represents the identity rotation.
-	Thus $\langle A,B\rangle$ is a free subgroup on two generators.
+	is isomorphic to $F_{2}$.
+\end{theorem}
+\begin{proof}
+	Take rotations by $\theta=\arccos(1/3)$ about the $z$- and $x$-axes:
+	\[
+		A=\frac13\begin{pmatrix}
+		1&-2\sqrt2&0\\2\sqrt2&1&0\\0&0&3
+		\end{pmatrix},
+		\qquad
+		B=\frac13\begin{pmatrix}
+		3&0&0\\0&1&-2\sqrt2\\0&2\sqrt2&1
+		\end{pmatrix}.
+	\]
+	Both matrices are orthogonal with determinant one. We show that every
+	nonempty reduced word in $A^{\pm1},B^{\pm1}$ differs from the identity.
+
+	Work in the field
+	$K=\mathbb F_3[t]/(t^2+1)$, and write $\eta$ for the class of $t$.
+	This is a field because $t^2+1$ has no root in $\mathbb F_3$;
+	moreover, $\eta^2=-1=2$ and $\eta\ne0$.
+	Reducing integer coefficients modulo three and sending $\sqrt2$ to $\eta$
+	defines a ring homomorphism $\mathbb Z[\sqrt2]\to K$.
+	For $\varepsilon\in\{1,-1\}$, let $N_{A,\varepsilon}$ and
+	$N_{B,\varepsilon}$ be the images of $3A^\varepsilon$ and
+	$3B^\varepsilon$ under this homomorphism. They factor as
+	\[
+	\begin{aligned}
+		N_{A,\varepsilon}
+		&=\begin{pmatrix}1\\-\varepsilon\eta\\0\end{pmatrix}
+		  \begin{pmatrix}1&\varepsilon\eta&0\end{pmatrix}
+		  =u_{A,\varepsilon}v_{A,\varepsilon},\\
+		N_{B,\varepsilon}
+		&=\begin{pmatrix}0\\1\\-\varepsilon\eta\end{pmatrix}
+		  \begin{pmatrix}0&1&\varepsilon\eta\end{pmatrix}
+		  =u_{B,\varepsilon}v_{B,\varepsilon}.
+	\end{aligned}
+	\]
+	The row-column products between adjacent factors are
+	\[
+	\begin{aligned}
+		v_{A,\varepsilon}u_{A,\delta}
+		 &=v_{B,\varepsilon}u_{B,\delta}=1+\varepsilon\delta,\\
+		v_{A,\varepsilon}u_{B,\delta}&=\varepsilon\eta,
+		\qquad v_{B,\varepsilon}u_{A,\delta}=-\delta\eta.
+	\end{aligned}
+	\]
+	For equal generators, this scalar vanishes exactly when the adjacent
+	letters are inverses; for different generators, it never vanishes.
+	Consequently, the product of the $N$ matrices associated with a reduced
+	word is a nonzero scalar times the outer product of its first column
+	factor and last row factor, and hence is nonzero.
+
+	If a reduced word $W=L_1\cdots L_n$, $n\ge1$, were the identity, then
+	\[
+		(3L_1)\cdots(3L_n)=3^nI.
+	\]
+	Reduction to $K$ would make the right side zero and the left side
+	nonzero, a contradiction. Thus the homomorphism from $F_2$ sending its
+	generators to $A,B$ is injective, and its image is $\langle A,B\rangle$.
 \end{proof}
 
 We henceforth identify $F_2$ with its copy
